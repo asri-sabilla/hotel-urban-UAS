@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Receipt and Payment Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .receipt, .container {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #000;
+            border-radius: 5px;
+            background-color: white;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        p {
+            margin: 5px 0;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .price {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px solid #000;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .file-upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .file-upload input[type="file"] {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            padding: 10px;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .file-upload button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .file-upload button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Styling for Edit Booking Form */
+        .edit-booking-form {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .edit-booking-form input, .edit-booking-form select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .edit-booking-form button {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .edit-booking-form button:hover {
+            background-color: #218838;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <h2>Booking Receipt</h2>
+        <p><strong>Check-In:</strong> <span id="checkin"></span></p>
+        <p><strong>Check-Out:</strong> <span id="checkout"></span></p>
+        <p><strong>Room Type:</strong> <span id="roomType"></span></p>
+        <p><strong>Duration:</strong> <span id="nights"></span> nights</p>
+        <p><strong>Person:</strong> <span id="person"></span></p>
+        <p><strong>Rooms:</strong> <span id="rooms"></span></p>
+        <p><strong>Payment Method:</strong> <span id="paymentMethod"></span></p>
+        <p id="bankNameRow" style="display: none;"><strong>Bank:</strong> <span id="bankName"></span></p>
+        <p id="cardNumberRow" style="display: none;"><strong>Card Number:</strong> <span id="cardNumber"></span></p>
+        <div class="price">
+            Total Price: Rp<span id="totalPrice"></span>
+        </div>
+    </div>
+
+    <h2>Upload Bukti Pembayaran</h2>
+    <form action="../controller/proses-upload.php" method="post" enctype="multipart/form-data">
+        <div id="uploadProof" class="container">
+            <div class="file-upload">
+                <input type="file" name="pp">
+                <button type="submit">Upload</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="footer">
+        <p>&copy; 2025 All Rights Reserved | Booking System</p>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const checkin = params.get("checkin");
+        const checkout = params.get("checkout");
+        const roomType = params.get("roomType");
+        const person = params.get("person");
+        const rooms = params.get("rooms");
+        const totalPrice = params.get("totalPrice");
+        const paymentMethod = params.get("paymentMethod");
+        const bankName = params.get("bankName");
+        const cardNumber = params.get("cardNumber");
+        const nights = params.get("nights");
+
+        document.getElementById("checkin").textContent = checkin;
+        document.getElementById("checkout").textContent = checkout;
+        document.getElementById("roomType").textContent = roomType;
+        document.getElementById("nights").textContent = nights;
+        document.getElementById("person").textContent = person;
+        document.getElementById("rooms").textContent = rooms;
+        document.getElementById("totalPrice").textContent = totalPrice.replace(/[^0-9]/g, '');
+        document.getElementById("paymentMethod").textContent = paymentMethod;
+
+        if (paymentMethod === "bank-transfer") {
+            document.getElementById("bankNameRow").style.display = "block";
+            document.getElementById("bankName").textContent = bankName;
+        }
+
+        if (paymentMethod === "credit-card" && cardNumber) {
+            document.getElementById("cardNumberRow").style.display = "block";
+            document.getElementById("cardNumber").textContent = cardNumber.replace(/\d(?=\d{4})/g, "*");
+        }
+    </script>
+</body>
+</html>

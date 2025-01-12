@@ -1,0 +1,200 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Availability</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .summary, .payment-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: white;
+            margin-bottom: 20px;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .price {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #004aad;
+            color: white;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .price span {
+            color: #ffd700;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="summary">
+        <h2>Booking Summary</h2>
+        <p><strong>Check-In:</strong> <span id="checkin"></span></p>
+        <p><strong>Check-Out:</strong> <span id="checkout"></span></p>
+        <p><strong>Room Type:</strong> <span id="roomType"></span></p>
+        <p><strong>Duration:</strong> <span id="nights"></span> nights</p>
+        <p><strong>Person:</strong> <span id="person"></span></p>
+        <p><strong>Rooms:</strong> <span id="rooms"></span></p>
+        <div class="price">
+            Total Price: Rp<span id="totalPrice"></span>
+        </div>
+    </div>
+
+    <div class="payment-section">
+        <h3>Payment Options</h3>
+        <form method="POST" action="../controller/booking.php">
+            <input type="hidden" name="checkin" id="hidden-checkin">
+            <input type="hidden" name="checkout" id="hidden-checkout">
+            <input type="hidden" name="roomType" id="hidden-roomType">
+            <input type="hidden" name="person" id="hidden-person">
+            <input type="hidden" name="rooms" id="hidden-rooms">
+            <input type="hidden" name="totalPrice" id="hidden-totalPrice">
+            <input type="hidden" name="paymentMethod" id="hidden-paymentMethod">
+            <input type="hidden" name="cardNumber" id="hidden-cardNumber">
+            <input type="hidden" name="bankName" id="hidden-bankName">
+
+            <label for="payment-method">Select Payment Method</label>
+            <select id="payment-method" name="paymentMethod" onchange="toggleBankOptions()">
+                <option value="">-- Select Payment Method --</option>
+                <option value="credit-card">Credit Card</option>
+                <option value="bank-transfer">Bank Transfer</option>
+                <option value="e-wallet">E-Wallet (OVO, GoPay, DANA)</option>
+            </select>
+            
+            <div id="bank-options" style="display: none;">
+                <label for="bank-name">Select Bank</label>
+                <select id="bank-name" name="bankName">
+                    <option value="">-- Select Bank --</option>
+                    <option value="bri">BRI</option>
+                    <option value="bca">BCA</option>
+                    <option value="mandiri">Mandiri</option>
+                    <option value="bni">BNI</option>
+                    <option value="cimb">CIMB Niaga</option>
+                    <option value="bsi">BSI</option>
+                </select>
+            </div>
+
+            <label for="card-number">Card Number (if applicable)</label>
+            <input type="text" id="card-number" name="cardNumber" placeholder="Enter card number (only for Credit Card)">
+
+            <!-- In the existing form action, you may want to redirect to hasil-resi.php after processing -->
+    <form method="POST" action="../controller/booking.php">
+    <!-- Your existing inputs -->
+    <button type="submit" onclick="populateHiddenFields()">Proceed to Payment</button>
+        </form>
+    </div>
+
+    <script>
+        const roomPrices = {
+            single: 500000,
+            deluxe: 1200000,
+            triple: 1500000,
+            family: 2000000,
+            standard: 400000
+        };
+
+        function calculateNights(checkin, checkout) {
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            const timeDifference = checkoutDate - checkinDate;
+            return Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const checkin = params.get("checkin");
+        const checkout = params.get("checkout");
+        const roomType = params.get("roomType");
+        const person = params.get("person");
+        const rooms = parseInt(params.get("rooms"), 10);
+
+        const nights = calculateNights(checkin, checkout);
+        if (nights <= 0 || isNaN(nights)) {
+            alert("Invalid dates. Please go back and select valid check-in and check-out dates.");
+            window.location.href = "resi.html";
+        }
+
+        const pricePerNight = roomPrices[roomType];
+        const totalPrice = nights * pricePerNight * rooms;
+
+        document.getElementById("checkin").textContent = checkin;
+        document.getElementById("checkout").textContent = checkout;
+        document.getElementById("roomType").textContent = roomType.replace(/^[a-z]/, roomType[0].toUpperCase());
+        document.getElementById("nights").textContent = nights;
+        document.getElementById("person").textContent = person;
+        document.getElementById("rooms").textContent = rooms;
+        document.getElementById("totalPrice").textContent = totalPrice.toLocaleString("id-ID");
+
+        function toggleBankOptions() {
+            const paymentMethod = document.getElementById("payment-method").value;
+            const bankOptions = document.getElementById("bank-options");
+
+            if (paymentMethod === "bank-transfer") {
+                bankOptions.style.display = "block";
+            } else {
+                bankOptions.style.display = "none";
+            }
+        }
+
+        function populateHiddenFields() {
+            document.getElementById("hidden-checkin").value = checkin;
+            document.getElementById("hidden-checkout").value = checkout;
+            document.getElementById("hidden-roomType").value = roomType;
+            document.getElementById("hidden-person").value = person;
+            document.getElementById("hidden-rooms").value = rooms;
+            document.getElementById("hidden-totalPrice").value = totalPrice;
+            document.getElementById("hidden-paymentMethod").value = document.getElementById("payment-method").value;
+            document.getElementById("hidden-cardNumber").value = document.getElementById("card-number").value;
+            document.getElementById("hidden-bankName").value = document.getElementById("bank-name").value;
+        }
+        
+    </script>
+</body>
+</html>
